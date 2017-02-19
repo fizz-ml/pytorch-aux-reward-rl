@@ -6,7 +6,16 @@ class Agent:
         Attributes:
             auxillary_rewards: The list of enabled
             auxillary rewards for this agent
+            models: The agents models
     """
+    @property
+    def auxiliary_rewards():
+        pass
+
+    @property
+    def models():
+        pass
+
     
     def train():
         """Trains the agent for a bit.
@@ -39,9 +48,22 @@ class Agent:
         """
         raise NotImplementedError
 
-    @property
-    def auxiliary_rewards():
+    def save_models(location):
+        """Save the model to a given location
 
-class DDPGAgent(Agent):
-    pass
+            Args:
+                Location: where to save the model
+            Returns:
+                None
+        """
+        raise NotImplementedError
+        
+    def load_models(location):
+        """Loads the models from a given location
 
+            Args:
+                Location: from where to load the model
+            Returns:
+                None
+        """
+        raise NotImplementedError
