@@ -6,8 +6,8 @@ class Agent:
             auxillary rewards for this agent
     """
     @property
-    def auxiliary_rewards():
-        pass
+    def auxiliary_rewards(self):
+        return self.auxiliary_rewards
 
     def train():
         """Trains the agent for a bit.
@@ -22,7 +22,8 @@ class Agent:
     def get_next_action(cur_state,
             prev_reward,
             is_done=False,
-            agent_id=None):
+            agent_id=None,
+            is_test=True):
         """Get the next action from the agent.
             
             Takes a state,reward and possibly auxiliary reward
@@ -33,6 +34,7 @@ class Agent:
                 cur_state: The current state of the enviroment
                 prev_reward: The previous reward from the enviroment
                 is_done: Signals if a given episode is done.
+                is_test: Check to see if the agent is done
                 agent_id=None
             Returns:
                 The next action that the agent with the given 
