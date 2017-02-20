@@ -1,22 +1,14 @@
-import torch
-
 class Agent:
     """The generic interface for an agent.
 
         Attributes:
             auxillary_rewards: The list of enabled
             auxillary rewards for this agent
-            models: The agents models
     """
     @property
     def auxiliary_rewards():
         pass
 
-    @property
-    def models():
-        pass
-
-    
     def train():
         """Trains the agent for a bit.
 
@@ -48,7 +40,7 @@ class Agent:
         """
         raise NotImplementedError
 
-    def save_models(location):
+    def save_models(location=None):
         """Save the model to a given location
 
             Args:
@@ -58,7 +50,7 @@ class Agent:
         """
         raise NotImplementedError
         
-    def load_models(location):
+    def load_models(location=None):
         """Loads the models from a given location
 
             Args:
