@@ -1,4 +1,3 @@
-import copy
 import torch
 import torch.optim as opt
 import agent
@@ -13,7 +12,7 @@ LEARNING_RATE_ACTOR = 0.01
 ACTOR_ITER_COUNT = 1000
 CRITIC_ITER_COUNT = 1000
 BATCH_SIZE = 100
-
+EPSILON = 0.01
 
 class DDPGAgent(agent.Agent):
     """An agent that implements the DDPG algorithm
@@ -31,10 +30,11 @@ class DDPGAgent(agent.Agent):
             auxillary rewards for this agent
 
             actor: The actor model that takes a state
-            and returns a new reward.
+            and returns a new action.
 
             critic: The critic model that takes a state
-            and an action and returns a new 
+            and an action and returns the expected 
+            reward
 
             replay_buffer: The DDPGAgent replay buffer
     """
@@ -97,7 +97,6 @@ class DDPGAgent(agent.Agent):
         
         #initialize models
         self.load_models()
-        self._target_critic = self.critic
 
     
     def train(self):
@@ -130,7 +129,7 @@ class DDPGAgent(agent.Agent):
             total_loss = -1*expected_reward
             for key,aux_reward_tuple in self.auxillary_rewards.items()
                 aux_weight,aux_module = aux_reward_tuple
-                total_loss += aux_weight*aux_module(aux_actions[key])
+                total_loss += aux_weight*aux_module(aux_actions[key],s_t,a_t,r_t,s_t1,a_t1)
 
             loss = torch.sum(total_loss)
 
@@ -139,7 +138,7 @@ class DDPGAgent(agent.Agent):
             loss.backwards()
             _actor_optimizer.step()
 
-        
+       self._target_optimizer.load_state_dict(self.critic.state_dict())
         
 
 
@@ -198,9 +197,11 @@ class DDPGAgent(agent.Agent):
         """
         self.actor = torch.load_lua(self._actor_location)
         self.critic = torch.load_lua(self._critic_location)
+        self._target_critic = torch.load_lua(self._critic_location)
 
         #Move weights and bufffers to the gpu if possible
         if torch.cuda.is_available():
             self.actor.cuda()
             self.critic.cuda()
+            self._target_critic()
 
