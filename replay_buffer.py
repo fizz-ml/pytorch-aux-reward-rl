@@ -56,7 +56,9 @@ class ExperienceReplay(ReplayBuffer):
             s_t1
             done
         """
-        if batch_size 
+        if batch_size > self.length-3:
+            # we might not have enough experience
+            raise IOError('batch_size out of range') 
              
         idxs = [] 
         while len(idxs) < batch_size:
@@ -89,7 +91,7 @@ class ExperienceReplay(ReplayBuffer):
         self.states[self.current_index] = s_t 
         self.rewards[self.current_index] = reward 
         self.dones[self.current_index] = done
-        self.current_index = (self.current_index + 1) % self.capacity 
+        self._icrement_index() 
 
     def put_act(self, s_t, a_t):
         """ Puts the current state and the action taking into Experience Replay.
@@ -130,4 +132,4 @@ class ExperienceReplay(ReplayBuffer):
 
     def _increment_index():
         self.current_index = (self.current_index + 1) % self.capacity 
-
+        self.length = min(self.capacity, self.length + 1)
