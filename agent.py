@@ -7,7 +7,11 @@ class Agent:
     """
     @property
     def auxiliary_rewards(self):
-        return self.auxiliary_rewards
+        return self.auxiliary_losses
+    
+    def __init__(auxiliary_losses):
+       self.auxiliary_losses = auxiliary_losses
+       # TODO: Implement auxiliary module instantiation
 
     def train():
         """Trains the agent for a bit.

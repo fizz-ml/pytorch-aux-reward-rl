@@ -73,7 +73,7 @@ class GymEnvironment(Environment):
 
     @property
     def obs_size(self):
-        return self.cur_obs.shape
+        return self.env.observation_space.n
 
     @property
     def cur_obs(self):
