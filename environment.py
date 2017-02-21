@@ -38,7 +38,7 @@ class GymEnvironment(Environment):
         """ Initializes a gym environment.
         """
         self.env = gym.make(name)
-        self.cur_obs = None
+        self._cur_obs = None
 
     def next_obs(self, action, render = False):
         """ Runs a step in the gym environment.
@@ -77,4 +77,8 @@ class GymEnvironment(Environment):
 
     @property
     def cur_obs(self):
-        return self.cur_obs 
+        return self._cur_obs 
+
+    @cur_obs.setter
+    def cur_obs(self, value):
+        self._cur_obs = value
