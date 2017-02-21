@@ -17,26 +17,26 @@ EPSILON = 0.01
 class DDPGAgent(agent.Agent):
     """An agent that implements the DDPG algorithm
 
-        An agent that implements the deep deterministic
-        policy gradient algorithm for continuous control.
-        A description of the algorithm can be found at
-        https://arxiv.org/pdf/1509.02971.pdf.
+    An agent that implements the deep deterministic
+    policy gradient algorithm for continuous control.
+    A description of the algorithm can be found at
+    https://arxiv.org/pdf/1509.02971.pdf.
 
-        The agent stores a replay buffer along with
-        two models of the data, an actor and a critic.
+    The agent stores a replay buffer along with
+    two models of the data, an actor and a critic.
 
-        Attributes:
-            auxillary_rewards: The list of enabled
-            auxillary rewards for this agent
+    Attributes:
+        auxiliary_losses: The list of enabled
+        auxiliary rewards for this agent
 
-            actor: The actor model that takes a state
-            and returns a new action.
+        actor: The actor model that takes a state
+        and returns a new action.
 
-            critic: The critic model that takes a state
-            and an action and returns the expected 
-            reward
+        critic: The critic model that takes a state
+        and an action and returns the expected 
+        reward
 
-            replay_buffer: The DDPGAgent replay buffer
+        replay_buffer: The DDPGAgent replay buffer
     """
     @property
     def actor(self):
@@ -51,32 +51,37 @@ class DDPGAgent(agent.Agent):
         return self.replay_buffer
 
     def __init__(self,actor_location, critic_location,
-            buffer_size=REPLAY_BUFFER_SIZE,
-            gamma=DISCOUNT_FACTOR,
-            actor_alpha=LEARNING_RATE_ACTOR
-            critic_alpha=LEARING_RATE_CRITIC
-            actor_iter_count=ACTOR_ITER_COUNT
-            critic_iter_count=CRITIC_ITER_COUNT
-            batch_size=BATCH_SIZE,
-            auxillary_loss_modules={}):
+            state_size = 1,
+            action_size = 1,           
+            buffer_size = REPLAY_BUFFER_SIZE,
+            gamma = DISCOUNT_FACTOR,
+            actor_alpha = LEARNING_RATE_ACTOR,
+            critic_alpha = LEARING_RATE_CRITIC,
+            actor_iter_count = ACTOR_ITER_COUNT,
+            critic_iter_count = CRITIC_ITER_COUNT,
+            batch_size = BATCH_SIZE,
+            auxiliary_losses = {}):
         """Constructor for the DDPG_agent
 
-            Args:
-                actor_location: location of the actor_t7
+        Args:
+            actor_location: location of the actor_t7
 
-                critic_location: location of the critic_t7
+            critic_location: location of the critic_t7
 
-                buffer_size: size of the replay buffer
+            buffer_size: size of the replay buffer
 
-                alpha: The learning rate
-                
-                gamma: The discount factor 
-                
-            Returns:
-                A DDPGAgent object
+            alpha: The learning rate
+            
+            gamma: The discount factor 
+            
+        Returns:
+            A DDPGAgent object
         """
+        super(DDPGAgent, self).__init__(auxiliary_losses)
+        
         #Initialize experience replay buffer
-        self.replay_buffer = #TODO
+        self.replay_buffer = ExperienceReplay(state_size, action_size, capacity)
+        #TODO
 
         #initialize parameters
         self._actor_alpha = actor_alpha
@@ -89,16 +94,15 @@ class DDPGAgent(agent.Agent):
         #Specify model locations
         self._actor_location = actor_location
         self._critic_location = critic_location
-
-        #Initialize optimizers
-        self._actor_optimizer = opt.ADAM(actor.parameters(), lr=_self._actor_alpha)
-        self._critic_optimizer = opt.ADAM(critic.parameters(), lr=_self._critic_alpha)
-
         
         #initialize models
         self.load_models()
 
-    
+        #Initialize optimizers
+        self._actor_optimizer = opt.ADAM(self.actor.parameters(), lr=_self._actor_alpha)
+        self._critic_optimizer = opt.ADAM(self.critic.parameters(), lr=_self._critic_alpha)
+
+            
     def train(self):
         """Trains the agent for a bit.
 
@@ -123,11 +127,11 @@ class DDPGAgent(agent.Agent):
         #update_actor
         for i in range(self._actor_iter_count)
             s_t, a_t, r_t, s_t1, done = self.replay_buffer.batch_sample(self._batch_size)
-            a_t1,aux_actions = self.actor.forward(s_t1,r_t,self.auxiliary_rewards.keys())
+            a_t1,aux_actions = self.actor.forward(s_t1,r_t,self.auxiliary_losses.keys())
             expected_reward = self.critic.forward(s_t1,a_t1)
             
             total_loss = -1*expected_reward
-            for key,aux_reward_tuple in self.auxillary_rewards.items()
+            for key,aux_reward_tuple in self.auxiliary_losses.items()
                 aux_weight,aux_module = aux_reward_tuple
                 total_loss += aux_weight*aux_module(aux_actions[key],s_t,a_t,r_t,s_t1,a_t1)
 
@@ -137,8 +141,9 @@ class DDPGAgent(agent.Agent):
             _actor_optimizer.zero_grad()
             loss.backwards()
             _actor_optimizer.step()
-
-       self._target_optimizer.load_state_dict(self.critic.state_dict())
+        
+        # TODO: Freeze less often
+        self._target_critic.load_state_dict(self.critic.state_dict())
         
 
 
@@ -166,7 +171,7 @@ class DDPGAgent(agent.Agent):
         """
         if (prev_reward != None):
             self.replay_buffer.put_rew(prev_reward,is_done)
-        cur_action = self.actor.forwards(cur_state,prev_reward,[])
+        cur_action = self.actor.forward(cur_state,prev_reward,[])
         self.replay_buffer.put_act(cur_state,cur_action)
         
         return cur_action
@@ -188,6 +193,7 @@ class DDPGAgent(agent.Agent):
         torch.save(self._actor_location,critic)
         
     def load_models(self, locations=None):
+        # TODO: Make it actually do what it says
         """Loads the models from given locations
 
             Args:
@@ -195,9 +201,9 @@ class DDPGAgent(agent.Agent):
             Returns:
                 None
         """
-        self.actor = torch.load_lua(self._actor_location)
-        self.critic = torch.load_lua(self._critic_location)
-        self._target_critic = torch.load_lua(self._critic_location)
+        self.actor = torch.load(self._actor_location)
+        self.critic = torch.load(self._critic_location)
+        self._target_critic = torch.load(self._critic_location)
 
         #Move weights and bufffers to the gpu if possible
         if torch.cuda.is_available():

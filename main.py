@@ -1,4 +1,6 @@
 import config
+from environment import GymEnvironment
+from ddpg_agent import DDPGAgent
 
 def main():
     conf = config.config_dict
@@ -7,11 +9,13 @@ def main():
     run.test(conf['test'])
 
 class Runner:
-    def __init__(env_config, agent_config):
-        self.env = GymEnvironment('CartPole')   
-        self.agent = DDPGAgent(actor_path, critic_path, **agent_config) 
+    def __init__(self, env_config, agent_config):
+        self.env = GymEnvironment(**env_config)
+        self.agent = DDPGAgent(action_size = self.env.action_size,
+                                state_size = self.env.obs_size,
+                                **agent_config) 
 
-    def train(train_config, fill_replay = True):
+    def train(self, train_config, fill_replay = True):
         # Fill experience replay
         if fill_replay:
             prefill = train_config['prefill']
@@ -43,7 +47,7 @@ class Runner:
 
             agent.train()
 
-    def test(test_config):
+    def test(self, test_config):
         test_steps = test_config['steps']
         
         for step in xrange(start_train):
