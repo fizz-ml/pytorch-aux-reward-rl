@@ -5,9 +5,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-SIZE_H1 = 120
-SIZE_H2 = 100
-SIZE_H3 = 50
+#don't ask how I came up with these numbers
+
+SIZE_H1 = 500
+SIZE_H2 = 1000
+SIZE_H3 = 600
 
 
 
@@ -28,10 +30,10 @@ class model(torch.nn.Module):
 		self._l4 = torch.nn.Linear( SIZE_H3, self._dim_output)
 
 	def forward(self,x):
-		self._l1_out = nn.ReLU()(self._l1(x))
-		self._l2_out = nn.ReLU()(self._l2(self._l1_out))
+		self._l1_out = F.relu(self._l1(x))
+		self._l2_out = F.relu(self._l2(self._l1_out))
 		self._l3_out = nn.BatchNorm1d(SIZE_H3)(self._l3(self._l2_out))
-		self._out = self._l4(self._l3_out)
+		self._out = F.tanh(self._l4(self._l3_out))
 
 
 		return self._out

@@ -23,9 +23,9 @@ class generator():
         model = M(self._dim_input, self._dim_output)
         if(self.is_actor):
             
-            torch.save(model, os.path.join(self._save_location,'models/actor_models/',self._name+'_actor.t7')) 
+            torch.save(model, os.path.join(self._save_location,self._name+'_actor.t7')) 
         else:
-            torch.save(model, os.path.join(self._save_location,'models/critic_models/',self._name+'_critic.t7'))
+            torch.save(model, os.path.join(self._save_location,self._name+'_critic.t7'))
 
 
 def main(argv):
@@ -40,7 +40,7 @@ def main(argv):
 
     opts, args = getopt.getopt(argv,"n:f:s:a:i:o:")
     is_actor = True
-    save_location = ""
+    save_location = "models/ddpg_models/"
     name = ""
     spec_file = ""
     dim_input = 100
