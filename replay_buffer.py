@@ -101,7 +101,7 @@ class ExperienceReplay(ReplayBuffer):
         Raises:
             IOError:    If trying to overwrite previously staged action and state.
         """
-        if(!self.staged):
+        if not self.staged:
             self.actions[self.current_index] = a_t 
             self.states[self.current_index] = s_t
             # stage to prevent double staging
@@ -127,8 +127,7 @@ class ExperienceReplay(ReplayBuffer):
             self._icrement_index() 
         else:
             # not yet staged state and action
-            raise IOError(  'Trying to complete unstaged insertion. 
-                            Must insert action and state first.')
+            raise IOError(  'Trying to complete unstaged insertion. Must insert action and state first.')
 
     def _increment_index():
         self.current_index = (self.current_index + 1) % self.capacity 

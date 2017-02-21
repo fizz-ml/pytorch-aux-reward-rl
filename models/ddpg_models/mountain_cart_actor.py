@@ -7,9 +7,9 @@ import torch.nn.functional as F
 
 #don't ask how I came up with these numbers
 
-SIZE_H1 = 500
-SIZE_H2 = 1000
-SIZE_H3 = 600
+SIZE_H1 = 50
+SIZE_H2 = 100
+SIZE_H3 = 60
 
 
 

@@ -6,10 +6,10 @@ import numpy as np
 
 IN_DIM = 3
 OUT_DIM = 1
-H_LAYER1 = 10
-H_LAYER2 = 10000
+H_LAYER1 = 50
+H_LAYER2 = 10
 H_LAYER3 = 10
-H_LAYER4 = 10000
+H_LAYER4 = 10
 
 
 class MountainCartCritic(nn.Module):

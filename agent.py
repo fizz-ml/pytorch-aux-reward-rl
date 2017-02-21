@@ -9,7 +9,7 @@ class Agent:
     def auxiliary_rewards(self):
         return self.auxiliary_losses
     
-    def __init__(auxiliary_losses):
+    def __init__(self, auxiliary_losses):
        self.auxiliary_losses = auxiliary_losses
        # TODO: Implement auxiliary module instantiation
 
