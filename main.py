@@ -1,6 +1,7 @@
 import config
 from environment import GymEnvironment
 from ddpg_agent import DDPGAgent
+import numpy as np
 
 def main():
     conf = config.config_dict

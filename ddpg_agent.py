@@ -2,7 +2,7 @@ import torch
 import torch.optim as opt
 import agent
 from replay_buffer import ExperienceReplay
-
+import numpy as np
 from torch.utils.serialization import load_lua
 
 #Default hyperparameter values
@@ -40,7 +40,7 @@ class DDPGAgent(agent.Agent):
         replay_buffer: The DDPGAgent replay buffer
     """
 
-    """ 
+    """
     @property
     def actor(self):
         return self.actor
@@ -177,7 +177,7 @@ class DDPGAgent(agent.Agent):
         print (prev_reward)
         if (prev_reward != None):
             self.replay_buffer.put_rew(prev_reward,is_done)
-        cur_action = self.actor.forward(cur_state,prev_reward,[])
+        cur_action = self.actor.forward(np.expand_dims(cur_state, axis = 0),np.expand_dims(prev_reward, axis = 0),[])
         self.replay_buffer.put_act(cur_state,cur_action)
         
         return cur_action

@@ -74,7 +74,7 @@ class ExperienceReplay(ReplayBuffer):
         s_t = self.states[idxs]        
         s_t1 = self.states[[(x+1) for x in idxs]]
         a_t = self.actions[idxs]
-        r_t = self.rewards[idxs]
+        r_t = np.expand_dims(self.rewards[idxs], axis = 1)
         done = self.dones[idxs]
 
         '''
