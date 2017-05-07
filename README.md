@@ -10,6 +10,7 @@ State, Action -> Critic-> Q(State,Action)
 
 
 Aux_reward_i:
+
 State -> Actor -> lower level representation of state (LRS)  
 LRS -> aux_reward_module_i -> Aux_reward_i 
 
