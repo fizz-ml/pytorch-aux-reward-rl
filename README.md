@@ -1,7 +1,7 @@
 ## Notes 
 
 
-DDPGA with Auxillary Rewards:
+DDPG with Auxillary Rewards:
 
 Main Actor-Critic Model:
 
