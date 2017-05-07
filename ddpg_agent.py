@@ -3,6 +3,7 @@ import torch.optim as opt
 import agent
 from replay_buffer import ExperienceReplay
 import numpy as np
+import dill
 from torch.utils.serialization import load_lua
 
 #Default hyperparameter values
@@ -195,8 +196,10 @@ class DDPGAgent(agent.Agent):
         self.critic.cpu()
 
         #Save both models
-        torch.save(self._actor_path,actor)
-        torch.save(self._actor_path,critic)
+        actor_file=(self._actor_path,"wb")
+        dill.dumps(actor,actor_file)
+        critic_file=(self._critic_path,"wb")
+        dill.dumps(actor,actor_file)
         
     def load_models(self, locations=None):
         # TODO: Make it actually do what it says
@@ -207,9 +210,9 @@ class DDPGAgent(agent.Agent):
             Returns:
                 None
         """
-        self.actor = torch.load(self._actor_path)
-        self.critic = torch.load(self._critic_path)
-        self._target_critic = torch.load(self._critic_path)
+        self.actor = dill.load(self._actor_path)
+        self.critic = dill.load(self._critic_path)
+        self._target_critic = dill.load(self._critic_path)
 
         #Move weights and bufffers to the gpu if possible
         if torch.cuda.is_available():
