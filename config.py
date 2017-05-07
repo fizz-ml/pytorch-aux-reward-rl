@@ -1,7 +1,7 @@
 config_dict = dict(
     agent   =   dict(
-                actor_path          = '', 
-                critic_path         = '',
+                actor_path          = './models/ddpg_models/ddpg_actor.t7', 
+                critic_path         = './models/ddpg_models/ddpg_critic.t7',
                 buffer_size         = 1000000,
                 gamma               = 0.95,
                 actor_alpha         = 0.001,
@@ -9,7 +9,7 @@ config_dict = dict(
                 actor_iter_count    = 1,
                 critic_iter_count   = 1,
                 batch_size          = 32,
-                auxillary_losses    =
+                auxiliary_losses    =
                     {
                         #'reward_predict' : 1
                     } 

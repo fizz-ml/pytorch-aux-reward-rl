@@ -56,7 +56,7 @@ def main(argv):
         elif opt == "-s":
             save_location = arg
         elif opt == "-a":
-            is_actor = bool(arg)
+            is_actor = bool(int(arg))
         elif opt == "-i":
             dim_input = int(arg)
         elif opt == "-o":

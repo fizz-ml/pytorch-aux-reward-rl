@@ -1,7 +1,8 @@
 import torch
 import torch.optim as opt
 import agent
-
+from replay_buffer import ExperienceReplay
+import numpy as np
 from torch.utils.serialization import load_lua
 
 #Default hyperparameter values
@@ -38,6 +39,8 @@ class DDPGAgent(agent.Agent):
 
         replay_buffer: The DDPGAgent replay buffer
     """
+
+    """
     @property
     def actor(self):
         return self.actor
@@ -49,14 +52,15 @@ class DDPGAgent(agent.Agent):
     @property
     def replay_buffer(self):
         return self.replay_buffer
+    """
 
-    def __init__(self,actor_location, critic_location,
+    def __init__(self,actor_path, critic_path,
             state_size = 1,
             action_size = 1,           
             buffer_size = REPLAY_BUFFER_SIZE,
             gamma = DISCOUNT_FACTOR,
             actor_alpha = LEARNING_RATE_ACTOR,
-            critic_alpha = LEARING_RATE_CRITIC,
+            critic_alpha = LEARNING_RATE_CRITIC,
             actor_iter_count = ACTOR_ITER_COUNT,
             critic_iter_count = CRITIC_ITER_COUNT,
             batch_size = BATCH_SIZE,
@@ -64,9 +68,9 @@ class DDPGAgent(agent.Agent):
         """Constructor for the DDPG_agent
 
         Args:
-            actor_location: location of the actor_t7
+            actor_path: location of the actor_t7
 
-            critic_location: location of the critic_t7
+            critic_path: location of the critic_t7
 
             buffer_size: size of the replay buffer
 
@@ -80,7 +84,8 @@ class DDPGAgent(agent.Agent):
         super(DDPGAgent, self).__init__(auxiliary_losses)
         
         #Initialize experience replay buffer
-        self.replay_buffer = ExperienceReplay(state_size, action_size, capacity)
+        print(state_size)
+        self.replay_buffer = ExperienceReplay(state_size, action_size, buffer_size)
         #TODO
 
         #initialize parameters
@@ -92,15 +97,15 @@ class DDPGAgent(agent.Agent):
         self._batch_size = batch_size
         
         #Specify model locations
-        self._actor_location = actor_location
-        self._critic_location = critic_location
+        self._actor_path = actor_path
+        self._critic_path = critic_path
         
         #initialize models
         self.load_models()
 
         #Initialize optimizers
-        self._actor_optimizer = opt.ADAM(self.actor.parameters(), lr=_self._actor_alpha)
-        self._critic_optimizer = opt.ADAM(self.critic.parameters(), lr=_self._critic_alpha)
+        self._actor_optimizer = opt.Adam(self.actor.parameters(), lr=self._actor_alpha)
+        self._critic_optimizer = opt.Adam(self.critic.parameters(), lr=self._critic_alpha)
 
             
     def train(self):
@@ -112,7 +117,7 @@ class DDPGAgent(agent.Agent):
                 None
         """
         #update_critic
-        for i in range(self._critic_iter_count)
+        for i in range(self._critic_iter_count):
             s_t, a_t, r_t, s_t1, done = self.replay_buffer.batch_sample(self._batch_size)
             a_t1 = self.actor.forward(s_t1,r_t,[])
             critic_target = r_t + self._gamma*(1-done)*self._target_critic.forward(s_t1,a_t1)
@@ -125,13 +130,13 @@ class DDPGAgent(agent.Agent):
 
 
         #update_actor
-        for i in range(self._actor_iter_count)
+        for i in range(self._actor_iter_count):
             s_t, a_t, r_t, s_t1, done = self.replay_buffer.batch_sample(self._batch_size)
             a_t1,aux_actions = self.actor.forward(s_t1,r_t,self.auxiliary_losses.keys())
             expected_reward = self.critic.forward(s_t1,a_t1)
             
             total_loss = -1*expected_reward
-            for key,aux_reward_tuple in self.auxiliary_losses.items()
+            for key,aux_reward_tuple in self.auxiliary_losses.items():
                 aux_weight,aux_module = aux_reward_tuple
                 total_loss += aux_weight*aux_module(aux_actions[key],s_t,a_t,r_t,s_t1,a_t1)
 
@@ -151,7 +156,7 @@ class DDPGAgent(agent.Agent):
             cur_state,
             prev_reward,
             is_done=False,
-            agent_id=None
+            agent_id=None,
             is_test=False):
         """Get the next action from the agent.
             
@@ -169,9 +174,10 @@ class DDPGAgent(agent.Agent):
                 The next action that the agent with the given 
                 agent_id will carry out given the current state
         """
+        print (prev_reward)
         if (prev_reward != None):
             self.replay_buffer.put_rew(prev_reward,is_done)
-        cur_action = self.actor.forward(cur_state,prev_reward,[])
+        cur_action = self.actor.forward(np.expand_dims(cur_state, axis = 0),np.expand_dims(prev_reward, axis = 0),[])
         self.replay_buffer.put_act(cur_state,cur_action)
         
         return cur_action
@@ -189,8 +195,8 @@ class DDPGAgent(agent.Agent):
         self.critic.cpu()
 
         #Save both models
-        torch.save(self._actor_location,actor)
-        torch.save(self._actor_location,critic)
+        torch.save(self._actor_path,actor)
+        torch.save(self._actor_path,critic)
         
     def load_models(self, locations=None):
         # TODO: Make it actually do what it says
@@ -201,9 +207,9 @@ class DDPGAgent(agent.Agent):
             Returns:
                 None
         """
-        self.actor = torch.load(self._actor_location)
-        self.critic = torch.load(self._critic_location)
-        self._target_critic = torch.load(self._critic_location)
+        self.actor = torch.load(self._actor_path)
+        self.critic = torch.load(self._critic_path)
+        self._target_critic = torch.load(self._critic_path)
 
         #Move weights and bufffers to the gpu if possible
         if torch.cuda.is_available():
