@@ -4,7 +4,11 @@ import agent
 from replay_buffer import ExperienceReplay
 import numpy as np
 import dill
+import random
 from torch.utils.serialization import load_lua
+import model_defs.ddpg_models.mountain_cart.critic as critic
+import model_defs.ddpg_models.mountain_cart.actor as actor
+import random
 
 #Default hyperparameter values
 REPLAY_BUFFER_SIZE = 1000000
@@ -175,12 +179,17 @@ class DDPGAgent(agent.Agent):
                 The next action that the agent with the given 
                 agent_id will carry out given the current state
         """
-        print (prev_reward)
+        print ((prev_reward,cur_state))
+        # TODO i mean what even is this????!??!?
+        cur_action = None
         if (prev_reward != None):
             self.replay_buffer.put_rew(prev_reward,is_done)
-        cur_action = self.actor.forward(np.expand_dims(cur_state, axis = 0),np.expand_dims(prev_reward, axis = 0),[])
+            cur_action = self.actor.forward(cur_state, np.expand_dims(prev_reward, axis = 0),[]).data.cpu().numpy()
+        else:
+            cur_action = [random.random()-0.5]
+        print(cur_state)
+        print(cur_action)
         self.replay_buffer.put_act(cur_state,cur_action)
-        
         return cur_action
 
     def save_models(self, locations=None):
@@ -197,9 +206,9 @@ class DDPGAgent(agent.Agent):
 
         #Save both models
         actor_file=open(self._actor_path,"wb")
-        dill.dumps(self.actor,actor_file)
+        dill.dump(self.actor,actor_file)
         critic_file=open(self._critic_path,"wb")
-        dill.dumps(self.critic,critic_file)
+        dill.dump(self.critic,critic_file)
         
     def load_models(self, locations=None):
         # TODO: Make it actually do what it says
@@ -213,10 +222,10 @@ class DDPGAgent(agent.Agent):
         actor_file=open(self._actor_path,"rb")
         print(self._actor_path)
         print(actor_file)
-        self.actor = dill.load(actor_file)
+        self.actor = actor.Actor(3,1) #dill.load(actor_file)
         critic_file=open(self._critic_path,"rb")
-        self.critic = dill.load(critic_file)
-        self._target_critic = dill.load(critic_file)
+        self.critic = critic.Critic(3,1)#dill.load(critic_file)
+        self._target_critic = critic.Critic(3,1)#dill.load(critic_file)
 
         #Move weights and bufffers to the gpu if possible
         if torch.cuda.is_available():

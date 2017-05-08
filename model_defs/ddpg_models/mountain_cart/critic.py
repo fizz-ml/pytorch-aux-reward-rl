@@ -10,9 +10,9 @@ H_LAYER2 = 10
 H_LAYER3 = 10
 H_LAYER4 = 10
 
-class critic(nn.Module):
+class Critic(nn.Module):
     def __init__(self,dim_input, dim_output):
-        super(critic, self).__init__()
+        super(Critic, self).__init__()
         self._dim_input = dim_input
         self._dim_output = dim_output
         self.linear1 = nn.Linear(self._dim_input, H_LAYER1)

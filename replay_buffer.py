@@ -37,7 +37,7 @@ class ExperienceReplay(ReplayBuffer):
         self.length  = 0 
         self.capacity = capacity
 
-        self.actions = np.empty((self.capacity, self.action_size), dtype = np.uint8) 
+        self.actions = np.empty((self.capacity, self.action_size), dtype = np.float16) 
         self.states = np.empty((self.capacity, self.state_size), dtype = np.float16)
         self.rewards = np.empty(self.capacity, dtype = np.float16)
         self.dones = np.empty(self.capacity, dtype = np.bool)
@@ -124,11 +124,11 @@ class ExperienceReplay(ReplayBuffer):
             self.dones[self.current_index] = done
             # unstage and increment index
             self.staged = False
-            self._icrement_index() 
+            self._increment_index() 
         else:
             # not yet staged state and action
             raise IOError(  'Trying to complete unstaged insertion. Must insert action and state first.')
 
-    def _increment_index():
+    def _increment_index(self):
         self.current_index = (self.current_index + 1) % self.capacity 
         self.length = min(self.capacity, self.length + 1)

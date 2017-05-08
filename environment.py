@@ -40,7 +40,7 @@ class GymEnvironment(Environment):
         self.env = gym.make(name)
         self._cur_obs = None
 
-    def next_obs(self, action, render = False):
+    def next_obs(self, cur_action, render = False):
         """ Runs a step in the gym environment.
         Args:
             action:         Current action to perform 
@@ -51,11 +51,9 @@ class GymEnvironment(Environment):
             reward:         Reward received from the step. 
             done:           Bool signaling terminal step.
         """
-        self.env.step(cur_action)
-        self.env.step(cur_action)
         self.cur_obs, self.cur_reward, self.done, _ = self.env.step(cur_action)
         if render:
-            self.env.render() 
+            self.env.render()
         return self.cur_obs, self.cur_reward, self.done
 
     def new_episode(self):

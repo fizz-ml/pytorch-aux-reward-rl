@@ -13,13 +13,13 @@ SIZE_H1 = 50
 SIZE_H2 = 100
 SIZE_H3 = 60
 
-class actor(torch.nn.Module):
+class Actor(torch.nn.Module):
     """Defines custom model
     Inherits from torch.nn.Module 
     """
     def __init__(self, dim_input, dim_output):
         
-        super(actor, self).__init__()
+        super(Actor, self).__init__()
         self._dim_input = dim_input
         self._dim_output = dim_output
         
@@ -30,7 +30,12 @@ class actor(torch.nn.Module):
         self._l4 = torch.nn.Linear( SIZE_H3, self._dim_output)
 
     def forward(self,s_t, r_t, aux_array): #TODO: Add aux task support, experiment with inputting previous action as well
-        x = Variable(torch.FloatTensor(np.concatenate((s_t,r_t), axis = 1)))
+        print(s_t)
+        print(r_t)
+        inp = np.concatenate((s_t,r_t), axis = 0)
+        inp = np.expand_dims(inp, axis = 0)
+        print(inp)
+        x = Variable(torch.FloatTensor(inp))
         self._l1_out = F.relu(self._l1(x))
         self._l2_out = F.relu(self._l2(self._l1_out))
         self._l3_out = nn.BatchNorm1d(SIZE_H3)(self._l3(self._l2_out))
