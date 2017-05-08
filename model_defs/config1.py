@@ -12,9 +12,11 @@ H_LAYER3 = 10
 H_LAYER4 = 10
 
 
-class MountainCartCritic(nn.Module):
-    def __init__(self):
-        super(MountainCartCritic, self).__init__()
+class model(nn.Module):
+    def __init__(self, dim_input, dim_output):
+        super(model, self).__init__()
+        IN_DIM = dim_input 
+        OUT_DIM = dim_output 
         self.linear1 = nn.Linear(IN_DIM, H_LAYER1)
         self.linear2 = nn.Linear(H_LAYER1, H_LAYER2)
         self.linear3 = nn.Linear(H_LAYER2, H_LAYER3)
@@ -42,4 +44,4 @@ class MountainCartCritic(nn.Module):
         y = self.linear5(b4)
         return y
 
-
+	
