@@ -197,9 +197,9 @@ class DDPGAgent(agent.Agent):
 
         #Save both models
         actor_file=open(self._actor_path,"wb")
-        dill.dumps(actor,actor_file)
+        dill.dumps(self.actor,actor_file)
         critic_file=open(self._critic_path,"wb")
-        dill.dumps(actor,critic_file)
+        dill.dumps(self.critic,critic_file)
         
     def load_models(self, locations=None):
         # TODO: Make it actually do what it says
@@ -211,6 +211,8 @@ class DDPGAgent(agent.Agent):
                 None
         """
         actor_file=open(self._actor_path,"rb")
+        print(self._actor_path)
+        print(actor_file)
         self.actor = dill.load(actor_file)
         critic_file=open(self._critic_path,"rb")
         self.critic = dill.load(critic_file)
