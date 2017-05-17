@@ -206,6 +206,7 @@ class DDPGAgent(agent.Agent):
         
     def load_models(self, locations=None):
         # TODO: Make it actually do what it says
+        #TODO: Remove hard coding of data
         """Loads the models from given locations
 
             Args:
