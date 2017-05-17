@@ -14,5 +14,6 @@ Aux_reward_i:
 State -> Actor -> lower level representation of state (LRS)  
 LRS -> aux_reward_module_i -> Aux_reward_i 
 
-To train: backpropagate losses through Q and Aux_rewards
-
+To train, backprop:
+mean_square_loss(Q , Q_obs) ->  critic -> State, action 
+-Q -> critic -> State, action -> Actor -> State 
