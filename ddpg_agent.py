@@ -160,7 +160,6 @@ class DDPGAgent(agent.Agent):
     def get_next_action(self,
             cur_state,
             prev_reward,
-            is_done=False,
             agent_id=None,
             is_test=False):
         """Get the next action from the agent.
@@ -179,18 +178,13 @@ class DDPGAgent(agent.Agent):
                 The next action that the agent with the given 
                 agent_id will carry out given the current state
         """
-        print ((prev_reward,cur_state))
-        # TODO i mean what even is this????!??!?
         cur_action = None
-        if (prev_reward != None):
-            self.replay_buffer.put_rew(prev_reward,is_done)
-            cur_action = self.actor.forward(cur_state, np.expand_dims(prev_reward, axis = 0),[]).data.cpu().numpy()
-        else:
-            cur_action = [random.random()-0.5]
-        print(cur_state)
-        print(cur_action)
+        cur_action = self.actor.forward(cur_state, np.expand_dims(prev_reward, axis = 0),[]).data.cpu().numpy()
         self.replay_buffer.put_act(cur_state,cur_action)
         return cur_action
+
+    def log_reward(prev_reward,is_done):
+            self.replay_buffer.put_rew(prev_reward,is_done)
 
     def save_models(self, locations=None):
         """Save the model to a given locations
