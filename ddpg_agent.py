@@ -127,8 +127,6 @@ class DDPGAgent(agent.Agent):
         #update_critic
         for i in range(self._critic_iter_count):
             s_t, a_t, r_t, s_t1, done = self.replay_buffer.batch_sample(self._batch_size)
-            print(s_t1)
-            print(r_t)
             a_t1 = self.actor.forward(s_t1,[])
             critic_target = r_t + self._gamma*(1-done)*self._target_critic.forward(s_t1,a_t1)
             td_error = (self.critic.forward(s_t,a_t)-critic_target)**2
@@ -183,7 +181,6 @@ class DDPGAgent(agent.Agent):
                 agent_id will carry out given the current state
         """
         cur_action = None
-        print(cur_state)
         cur_action = self.actor.forward(np.expand_dims(cur_state,axis=0),[]).data.cpu().numpy()
         self.replay_buffer.put_act(cur_state,cur_action)
         return cur_action
