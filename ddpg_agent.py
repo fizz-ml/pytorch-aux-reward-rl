@@ -91,7 +91,6 @@ class DDPGAgent(agent.Agent):
         state_size = state_size + 1
 
         #Initialize experience replay buffer
-        print(state_size)
         self.replay_buffer = ExperienceReplay(state_size, action_size, buffer_size)
         #TODO
 

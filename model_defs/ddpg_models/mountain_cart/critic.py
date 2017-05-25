@@ -27,8 +27,10 @@ class Critic(nn.Module):
         self.batch_norm4 = nn.BatchNorm1d(H_LAYER4)
 
     def forward(self,s,a):
-        np_x = np.concatenate((s,a),axis=1)
-        x = Variable(torch.FloatTensor(np_x))
+        print(type(s))
+        print(type(a))
+        s = Variable(torch.FloatTensor(np.array(s,dtype=np.float32)))
+        x = torch.cat([s,a],1)
 
         a1 = F.relu(self.linear1(x))
         b1 = self.batch_norm1(a1)

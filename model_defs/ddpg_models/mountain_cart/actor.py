@@ -35,7 +35,7 @@ class Actor(torch.nn.Module):
         #inp = np.concatenate((s_t,r_t), axis = 0)
         #inp = np.expand_dims(inp, axis = 0)
         #print(inp)
-        x = Variable(torch.FloatTensor(s_t))
+        x = Variable(torch.FloatTensor(np.array(s_t,dtype=np.float32)))
         self._l1_out = F.relu(self._l1(x))
         self._l2_out = F.relu(self._l2(self._l1_out))
         self._l3_out = nn.BatchNorm1d(SIZE_H3)(self._l3(self._l2_out))
