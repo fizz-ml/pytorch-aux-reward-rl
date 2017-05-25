@@ -87,6 +87,8 @@ class DDPGAgent(agent.Agent):
             A DDPGAgent object
         """
         super(DDPGAgent, self).__init__(auxiliary_losses)
+        #state_size + 1 because we append reward to the input
+        state_size = state_size + 1
 
         #Initialize experience replay buffer
         print(state_size)
@@ -100,6 +102,8 @@ class DDPGAgent(agent.Agent):
         self._critic_iter_count = critic_iter_count
         self._gamma = gamma
         self._batch_size = batch_size
+        self._state_size = state_size 
+        self._action_size = action_size
 
         #Specify model locations
         self._actor_path = actor_path
@@ -126,7 +130,7 @@ class DDPGAgent(agent.Agent):
             s_t, a_t, r_t, s_t1, done = self.replay_buffer.batch_sample(self._batch_size)
             print(s_t1)
             print(r_t)
-            a_t1 = self.actor.forward(s_t1,np.zeros(),[])
+            a_t1 = self.actor.forward(s_t1,[])
             critic_target = r_t + self._gamma*(1-done)*self._target_critic.forward(s_t1,a_t1)
             td_error = (self.critic.forward(s_t,a_t)-critic_target)**2
 
@@ -139,7 +143,7 @@ class DDPGAgent(agent.Agent):
         #update_actor
         for i in range(self._actor_iter_count):
             s_t, a_t, r_t, s_t1, done = self.replay_buffer.batch_sample(self._batch_size)
-            a_t1,aux_actions = self.actor.forward(s_t1,r_t,self.auxiliary_losses.keys())
+            a_t1,aux_actions = self.actor.forward(s_t1,self.auxiliary_losses.keys())
             expected_reward = self.critic.forward(s_t1,a_t1)
 
             total_loss = -1*expected_reward
@@ -161,7 +165,6 @@ class DDPGAgent(agent.Agent):
 
     def get_next_action(self,
             cur_state,
-            prev_reward,
             agent_id=None,
             is_test=False):
         """Get the next action from the agent.
@@ -182,13 +185,12 @@ class DDPGAgent(agent.Agent):
         """
         cur_action = None
         print(cur_state)
-        print(prev_reward)
-        cur_action = self.actor.forward(cur_state, np.expand_dims(prev_reward, axis = 0),[]).data.cpu().numpy()
+        cur_action = self.actor.forward(np.expand_dims(cur_state,axis=0),[]).data.cpu().numpy()
         self.replay_buffer.put_act(cur_state,cur_action)
         return cur_action
 
-    def log_reward(self, prev_reward,is_done):
-            self.replay_buffer.put_rew(prev_reward,is_done)
+    def log_reward(self,reward,is_done):
+            self.replay_buffer.put_rew(reward,is_done)
 
     def save_models(self, locations=None):
         """Save the model to a given locations
@@ -219,12 +221,10 @@ class DDPGAgent(agent.Agent):
                 None
         """
         actor_file=open(self._actor_path,"rb")
-        print(self._actor_path)
-        print(actor_file)
-        self.actor = actor.Actor(3,1) #dill.load(actor_file)
+        self.actor = actor.Actor(self._state_size,self._action_size) #dill.load(actor_file)
         critic_file=open(self._critic_path,"rb")
-        self.critic = critic.Critic(3,1)#dill.load(critic_file)
-        self._target_critic = critic.Critic(3,1)#dill.load(critic_file)
+        self.critic = critic.Critic(self._state_size,self._action_size)#dill.load(critic_file)
+        self._target_critic = critic.Critic(self._state_size,self._action_size)#dill.load(critic_file)
 
         #Move weights and bufffers to the gpu if possible
         if torch.cuda.is_available():

@@ -37,7 +37,7 @@ class Runner:
             temp_done = False
             for step in range(prefill):
                 cur_obs = self.env.cur_obs
-                cur_obs += [temp_reward]
+                cur_obs = np.concatenate((cur_obs,np.array([temp_reward])))
                 _ = self.agent.get_next_action(cur_obs)
                 cur_action = [random.random()-0.5]
                 next_state, reward, done = self.env.next_obs(cur_action, render = True)
@@ -54,7 +54,7 @@ class Runner:
         for step in range(train_steps):
             cur_obs = self.env.cur_obs
             # TODO: This step probably belongs somewhere else
-            cur_obs += [temp_reward]
+            cur_obs = np.concatenate((cur_obs,np.array([temp_reward])))
             cur_action = self.agent.get_next_action(cur_obs)
 
             next_state, reward, done = self.env.next_obs(cur_action, render = True)
@@ -73,7 +73,7 @@ class Runner:
         temp_done = False
         for step in range(start_train):
             cur_obs = self.env.cur_obs
-            cur_obs += [temp_reward]
+            cur_obs = np.concatenate((cur_obs,np.array([temp_reward])))
             cur_action = self.agent.get_next_action(cur_obs)
             next_state, reward, done = self.env.next_obs(cur_action, render = True)
 
