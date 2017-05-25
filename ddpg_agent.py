@@ -39,7 +39,7 @@ class DDPGAgent(agent.Agent):
         and returns a new action.
 
         critic: The critic model that takes a state
-        and an action and returns the expected 
+        and an action and returns the expected
         reward
 
         replay_buffer: The DDPGAgent replay buffer
@@ -61,7 +61,7 @@ class DDPGAgent(agent.Agent):
 
     def __init__(self,actor_path, critic_path,
             state_size = 1,
-            action_size = 1,           
+            action_size = 1,
             buffer_size = REPLAY_BUFFER_SIZE,
             gamma = DISCOUNT_FACTOR,
             actor_alpha = LEARNING_RATE_ACTOR,
@@ -80,14 +80,14 @@ class DDPGAgent(agent.Agent):
             buffer_size: size of the replay buffer
 
             alpha: The learning rate
-            
-            gamma: The discount factor 
-            
+
+            gamma: The discount factor
+
         Returns:
             A DDPGAgent object
         """
         super(DDPGAgent, self).__init__(auxiliary_losses)
-        
+
         #Initialize experience replay buffer
         print(state_size)
         self.replay_buffer = ExperienceReplay(state_size, action_size, buffer_size)
@@ -100,11 +100,11 @@ class DDPGAgent(agent.Agent):
         self._critic_iter_count = critic_iter_count
         self._gamma = gamma
         self._batch_size = batch_size
-        
+
         #Specify model locations
         self._actor_path = actor_path
         self._critic_path = critic_path
-        
+
         #initialize models
         self.load_models()
 
@@ -112,7 +112,7 @@ class DDPGAgent(agent.Agent):
         self._actor_optimizer = opt.Adam(self.actor.parameters(), lr=self._actor_alpha)
         self._critic_optimizer = opt.Adam(self.critic.parameters(), lr=self._critic_alpha)
 
-            
+
     def train(self):
         """Trains the agent for a bit.
 
@@ -124,10 +124,12 @@ class DDPGAgent(agent.Agent):
         #update_critic
         for i in range(self._critic_iter_count):
             s_t, a_t, r_t, s_t1, done = self.replay_buffer.batch_sample(self._batch_size)
-            a_t1 = self.actor.forward(s_t1,r_t,[])
+            print(s_t1)
+            print(r_t)
+            a_t1 = self.actor.forward(s_t1,np.zeros(),[])
             critic_target = r_t + self._gamma*(1-done)*self._target_critic.forward(s_t1,a_t1)
             td_error = (self.critic.forward(s_t,a_t)-critic_target)**2
-            
+
             #preform one optimization update
             _critic_optimizer.zero_grad()
             td_error.backwards()
@@ -139,7 +141,7 @@ class DDPGAgent(agent.Agent):
             s_t, a_t, r_t, s_t1, done = self.replay_buffer.batch_sample(self._batch_size)
             a_t1,aux_actions = self.actor.forward(s_t1,r_t,self.auxiliary_losses.keys())
             expected_reward = self.critic.forward(s_t1,a_t1)
-            
+
             total_loss = -1*expected_reward
             for key,aux_reward_tuple in self.auxiliary_losses.items():
                 aux_weight,aux_module = aux_reward_tuple
@@ -151,10 +153,10 @@ class DDPGAgent(agent.Agent):
             _actor_optimizer.zero_grad()
             loss.backwards()
             _actor_optimizer.step()
-        
+
         # TODO: Freeze less often
         self._target_critic.load_state_dict(self.critic.state_dict())
-        
+
 
 
     def get_next_action(self,
@@ -163,10 +165,10 @@ class DDPGAgent(agent.Agent):
             agent_id=None,
             is_test=False):
         """Get the next action from the agent.
-            
+
             Takes a state,reward and possibly auxiliary reward
             tuple and returns the next action from the agent.
-            The agent may cache the reward and state 
+            The agent may cache the reward and state
 
             Args:
                 cur_state: The current state of the enviroment
@@ -175,15 +177,17 @@ class DDPGAgent(agent.Agent):
                 is_test: Check to see if the agent is done
                 agent_id=None
             Returns:
-                The next action that the agent with the given 
+                The next action that the agent with the given
                 agent_id will carry out given the current state
         """
         cur_action = None
+        print(cur_state)
+        print(prev_reward)
         cur_action = self.actor.forward(cur_state, np.expand_dims(prev_reward, axis = 0),[]).data.cpu().numpy()
         self.replay_buffer.put_act(cur_state,cur_action)
         return cur_action
 
-    def log_reward(prev_reward,is_done):
+    def log_reward(self, prev_reward,is_done):
             self.replay_buffer.put_rew(prev_reward,is_done)
 
     def save_models(self, locations=None):
@@ -203,7 +207,7 @@ class DDPGAgent(agent.Agent):
         dill.dump(self.actor,actor_file)
         critic_file=open(self._critic_path,"wb")
         dill.dump(self.critic,critic_file)
-        
+
     def load_models(self, locations=None):
         # TODO: Make it actually do what it says
         """Loads the models from given locations
