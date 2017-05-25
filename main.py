@@ -33,11 +33,11 @@ class Runner:
         if fill_replay:
             prefill = train_config['prefill']
 
-            temp_reward = None
+            temp_reward = 0
             temp_done = False
             for step in range(prefill):
                 cur_obs = self.env.cur_obs
-
+                cur_obs += [temp_reward]
                 _ = self.agent.get_next_action(cur_obs)
                 cur_action = [random.random()-0.5]
                 next_state, reward, done = self.env.next_obs(cur_action, render = True)
@@ -49,10 +49,12 @@ class Runner:
         # Start training
         train_steps = train_config['steps']
 
-        temp_reward = None
+        temp_reward = 0
         temp_done = True
         for step in range(train_steps):
             cur_obs = self.env.cur_obs
+            # TODO: This step probably belongs somewhere else
+            cur_obs += [temp_reward]
             cur_action = self.agent.get_next_action(cur_obs)
 
             next_state, reward, done = self.env.next_obs(cur_action, render = True)
@@ -67,10 +69,11 @@ class Runner:
     def test(self, test_config):
         test_steps = test_config['steps']
 
-        temp_reward = None
+        temp_reward = 0
         temp_done = False
         for step in range(start_train):
             cur_obs = self.env.cur_obs
+            cur_obs += [temp_reward]
             cur_action = self.agent.get_next_action(cur_obs)
             next_state, reward, done = self.env.next_obs(cur_action, render = True)
 
