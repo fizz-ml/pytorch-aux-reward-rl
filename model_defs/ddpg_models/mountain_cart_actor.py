@@ -30,8 +30,8 @@ class model(torch.nn.Module):
 		self._l3 = torch.nn.Linear(SIZE_H2, SIZE_H3)
 		self._l4 = torch.nn.Linear( SIZE_H3, self._dim_output)
 
-	def forward(self,s_t, r_t, aux_array): #TODO: Add aux task support, experiment with inputting previous action as well
-		x = Variable(torch.FloatTensor(np.concatenate((s_t,r_t), axis = 1)))
+	def forward(self,s_t, aux_array): #TODO: Add aux task support, experiment with inputting previous action as well
+		x = Variable(torch.FloatTensor(s_t))#np.concatenate((s_t,r_t), axis = 1)))
 		self._l1_out = F.relu(self._l1(x))
 		self._l2_out = F.relu(self._l2(self._l1_out))
 		self._l3_out = nn.BatchNorm1d(SIZE_H3)(self._l3(self._l2_out))
