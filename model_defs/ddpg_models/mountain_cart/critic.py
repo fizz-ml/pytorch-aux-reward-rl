@@ -15,6 +15,9 @@ class Critic(nn.Module):
         super(Critic, self).__init__()
         self._dim_input = dim_input
         self._dim_output = dim_output
+        print('u wot mate')
+        print(dim_input)
+        print(dim_output)
         self.linear1 = nn.Linear(self._dim_input, H_LAYER1)
         self.linear2 = nn.Linear(H_LAYER1, H_LAYER2)
         self.linear3 = nn.Linear(H_LAYER2, H_LAYER3)
@@ -27,10 +30,16 @@ class Critic(nn.Module):
         self.batch_norm4 = nn.BatchNorm1d(H_LAYER4)
 
     def forward(self,s,a):
+        print('wtf')
         print(type(s))
         print(type(a))
         s = Variable(torch.FloatTensor(np.array(s,dtype=np.float32)))
+        if(type(a)!=type(s)):
+            a = Variable(torch.FloatTensor(np.array(a,dtype=np.float32)))
+        print(type(s))
+        print(type(a))
         x = torch.cat([s,a],1)
+        print(x.size())
 
         a1 = F.relu(self.linear1(x))
         b1 = self.batch_norm1(a1)

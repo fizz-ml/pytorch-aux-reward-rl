@@ -101,7 +101,7 @@ class DDPGAgent(agent.Agent):
         self._critic_iter_count = critic_iter_count
         self._gamma = gamma
         self._batch_size = batch_size
-        self._state_size = state_size 
+        self._state_size = state_size
         self._action_size = action_size
 
         #Specify model locations
@@ -129,6 +129,7 @@ class DDPGAgent(agent.Agent):
             s_t, a_t, r_t, s_t1, done = self.replay_buffer.batch_sample(self._batch_size)
             a_t1 = self.actor.forward(s_t1,[])
             critic_target = r_t + self._gamma*(1-done)*self._target_critic.forward(s_t1,a_t1)
+            print('label', type((1-done)*self._target_critic.forward(s_t1,a_t1)))
             td_error = (self.critic.forward(s_t,a_t)-critic_target)**2
 
             #preform one optimization update
@@ -219,8 +220,9 @@ class DDPGAgent(agent.Agent):
         actor_file=open(self._actor_path,"rb")
         self.actor = actor.Actor(self._state_size,self._action_size) #dill.load(actor_file)
         critic_file=open(self._critic_path,"rb")
-        self.critic = critic.Critic(self._state_size,self._action_size)#dill.load(critic_file)
-        self._target_critic = critic.Critic(self._state_size,self._action_size)#dill.load(critic_file)
+        print(self._state_size,'}}}', self._action_size)
+        self.critic = critic.Critic(self._state_size + self._action_size, 1)#dill.load(critic_file)
+        self._target_critic = critic.Critic(self._state_size + self._action_size,1)#dill.load(critic_file)
 
         #Move weights and bufffers to the gpu if possible
         if torch.cuda.is_available():

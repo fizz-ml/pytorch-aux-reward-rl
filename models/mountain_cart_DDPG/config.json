@@ -20,7 +20,7 @@
 
     "train"   :   {
                 "steps" : 500000,
-                "prefill" : 1000
+                "prefill" : 100
                 },
 
     "test"    :   {
