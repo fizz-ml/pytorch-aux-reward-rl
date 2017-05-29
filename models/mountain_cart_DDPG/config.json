@@ -6,8 +6,8 @@
     "agent"   :   { 
                 "actor_path"          : "actor.mod", 
                 "critic_path"         : "critic.mod",
-                "buffer_size"         : 1000,
-                "gamma"               : 1,
+                "buffer_size"         : 200000,
+                "gamma"               : 0.95,
                 "actor_alpha"         : 0.001,
                 "critic_alpha"        : 0.001,
                 "actor_iter_count"    : 1,
@@ -28,7 +28,7 @@
                 },
 
     "env"     :   {
-                "name" : "MountainCarContinuous-v0",
+                "name" : "Pendulum-v0",
                 "action_dim"    :   1, 
                 "state_dim"     :   2
                 }

@@ -66,10 +66,9 @@ class ExperienceReplay(ReplayBuffer):
                 # keep trying random indices
                 idx = random.randint(1, self.length - 1)
                 # don't want to grab current index since it wraps
-                if idx == self.current_index and idx == self.current_index - 1:
-                    continue
-                idxs.append(idx)
-                break
+                if not( idx == self.current_index and idx == self.current_index - 1 ):
+                    idxs.append(idx)
+                    break
 
         s_t = self.states[idxs]
         s_t1 = self.states[[(x+1) for x in idxs]]
@@ -140,4 +139,4 @@ class ExperienceReplay(ReplayBuffer):
 
     def _increment_index(self):
         self.current_index = (self.current_index + 1) % self.capacity
-        self.length = min(self.capacity, self.length + 1)
+        self.length = min(self.capacity-1, self.length + 1)

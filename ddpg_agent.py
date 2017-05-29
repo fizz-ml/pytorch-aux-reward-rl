@@ -1,10 +1,11 @@
 import torch
 import torch.optim as opt
+from torch.autograd import Variable
+from torch import FloatTensor as FT
 import agent
 from replay_buffer import ExperienceReplay
 import numpy as np
 import dill
-import random
 from torch.utils.serialization import load_lua
 import model_defs.ddpg_models.mountain_cart.critic as critic
 import model_defs.ddpg_models.mountain_cart.actor as actor
@@ -95,6 +96,7 @@ class DDPGAgent(agent.Agent):
         #TODO
 
         #initialize parameters
+        self.epsilon = 0.35
         self._actor_alpha = actor_alpha
         self._critic_alpha = critic_alpha
         self._actor_iter_count = actor_iter_count
@@ -124,23 +126,34 @@ class DDPGAgent(agent.Agent):
             Returns:
                 None
         """
+        self.epsilon = self.epsilon * 0.99992
         #update_critic
         for i in range(self._critic_iter_count):
             s_t, a_t, r_t, s_t1, done = self.replay_buffer.batch_sample(self._batch_size)
-            a_t1 = self.actor.forward(s_t1,[])
+            done = upcast(done)
+            s_t = upcast(s_t)
+            a_t = upcast(a_t)
+            s_t1 = upcast(s_t1)
+            r_t = upcast(r_t)
+            a_t1, _ = self.actor.forward(s_t1,[])
             critic_target = r_t + self._gamma*(1-done)*self._target_critic.forward(s_t1,a_t1)
-            print('label', type((1-done)*self._target_critic.forward(s_t1,a_t1)))
             td_error = (self.critic.forward(s_t,a_t)-critic_target)**2
 
             #preform one optimization update
-            _critic_optimizer.zero_grad()
-            td_error.backwards()
-            _critic_optimizer.step()
+            self._critic_optimizer.zero_grad()
+            mean_td_error = torch.mean(td_error)
+            mean_td_error.backward()
+            self._critic_optimizer.step()
 
 
         #update_actor
         for i in range(self._actor_iter_count):
             s_t, a_t, r_t, s_t1, done = self.replay_buffer.batch_sample(self._batch_size)
+            done = upcast(done)
+            s_t = upcast(s_t)
+            a_t = upcast(a_t)
+            s_t1 = upcast(s_t1)
+            r_t = upcast(r_t)
             a_t1,aux_actions = self.actor.forward(s_t1,self.auxiliary_losses.keys())
             expected_reward = self.critic.forward(s_t1,a_t1)
 
@@ -149,12 +162,13 @@ class DDPGAgent(agent.Agent):
                 aux_weight,aux_module = aux_reward_tuple
                 total_loss += aux_weight*aux_module(aux_actions[key],s_t,a_t,r_t,s_t1,a_t1)
 
-            loss = torch.sum(total_loss)
+            mean_loss = torch.mean(total_loss)
 
+            #print('LOSS:', mean_loss, 'Eps', self.epsilon)
             #preform one optimization update
-            _actor_optimizer.zero_grad()
-            loss.backwards()
-            _actor_optimizer.step()
+            self._actor_optimizer.zero_grad()
+            mean_loss.backward()
+            self._actor_optimizer.step()
 
         # TODO: Freeze less often
         self._target_critic.load_state_dict(self.critic.state_dict())
@@ -182,7 +196,15 @@ class DDPGAgent(agent.Agent):
                 agent_id will carry out given the current state
         """
         cur_action = None
-        cur_action = self.actor.forward(np.expand_dims(cur_state,axis=0),[]).data.cpu().numpy()
+        if is_test:
+            a, _ = self.actor.forward(upcast(np.expand_dims(cur_state,axis=0)),[])
+            cur_action = a.data.cpu().numpy()
+        elif random.random() < self.epsilon:
+            cur_action = np.expand_dims(np.random.randn(self._action_size),axis=0)
+        else:
+            a, _ = self.actor.forward(upcast(np.expand_dims(cur_state,axis=0)),[])
+            cur_action = a.data.cpu().numpy()
+
         self.replay_buffer.put_act(cur_state,cur_action)
         return cur_action
 
@@ -220,7 +242,6 @@ class DDPGAgent(agent.Agent):
         actor_file=open(self._actor_path,"rb")
         self.actor = actor.Actor(self._state_size,self._action_size) #dill.load(actor_file)
         critic_file=open(self._critic_path,"rb")
-        print(self._state_size,'}}}', self._action_size)
         self.critic = critic.Critic(self._state_size + self._action_size, 1)#dill.load(critic_file)
         self._target_critic = critic.Critic(self._state_size + self._action_size,1)#dill.load(critic_file)
 
@@ -229,4 +250,10 @@ class DDPGAgent(agent.Agent):
             self.actor.cuda()
             self.critic.cuda()
             self._target_critic()
+
+def upcast(x):
+    ''' Upcasts x to a torch Variable.
+    '''
+    #TODO: Where does this go?
+    return Variable(FT(x.astype(np.float32)))
 
